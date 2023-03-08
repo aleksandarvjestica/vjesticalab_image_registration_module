@@ -5,15 +5,16 @@ from PyQt5 import QtWidgets
 import matplotlib
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
-import editing_functions as f
-import general.general_functions as gf
+from  registrationEditing import editing_functions as f
 import numpy as np
+from general import general_functions as gf
 
 matplotlib.use("Qt5Agg")
 
-class Single(QMainWindow):
-    def __init__(self):
-        super().__init__()
+class Single(QWidget):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.parent = parent
         self.setWindowTitle("Edit single transformation matrix")
 
         # Create the widgets
@@ -40,7 +41,7 @@ class Single(QMainWindow):
         self.submit_button.clicked.connect(self.update_clicked)
         
         self.quit_button = QPushButton('Quit', self)    # Create a button to quit the interface
-        self.quit_button.clicked.connect(self.close)    # Link quit button to action
+        self.quit_button.clicked.connect(self.parent.close)    # Link quit button to action
 
         # Add a horizontal line to the layout
         self.line1 = QFrame()
@@ -67,9 +68,7 @@ class Single(QMainWindow):
 
 
         # Set the layout for the window
-        central_widget = QWidget()
-        central_widget.setLayout(layout)
-        self.setCentralWidget(central_widget)
+        self.setLayout(layout)
 
     def browse_folder(self):
         self.folder_path = QFileDialog.getExistingDirectory()
@@ -126,14 +125,15 @@ class Single(QMainWindow):
         self.display_graph.move(700,0)
         self.display_graph.show()
 
-class Folder(QMainWindow):
-    def __init__(self):
-        super().__init__()
+class Folder(QWidget):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.parent = parent
         self.setWindowTitle("Edit folder of transformation matrices")
 
         # Create a label and line edit for the first variable
-        self.self.transfmat_path_label = QLabel('Select the transformation matrix:', self)
-        self.self.transfmat_path_edit = QLineEdit(self)
+        self.transfmat_path_label = QLabel('Select the transformation matrix:', self)
+        self.transfmat_path_edit = QLineEdit(self)
         
         # Create the browse button
         self.browse_button = QPushButton("Browse")
@@ -157,12 +157,12 @@ class Folder(QMainWindow):
         
         # Create a button to quit the application
         self.quit_button = QPushButton('Quit', self)
-        self.quit_button.clicked.connect(self.close)
+        self.quit_button.clicked.connect(self.parent.close)
 
         # Create the layout
         layout = QVBoxLayout()
-        layout.addWidget(self.self.transfmat_path_label)
-        layout.addWidget(self.self.transfmat_path_edit)
+        layout.addWidget(self.transfmat_path_label)
+        layout.addWidget(self.transfmat_path_edit)
         layout.addWidget(self.browse_button)
         layout.addWidget(self.list_widget_label)
         layout.addWidget(self.list_widget)
@@ -173,13 +173,11 @@ class Folder(QMainWindow):
         layout.addWidget(self.submit_button)
         layout.addWidget(self.quit_button)
         
-        widget = QWidget(self)
-        widget.setLayout(layout)
-        self.setCentralWidget(widget)
+        self.setLayout(layout)
 
     def submit_values(self):
         # Get the values from the line edits
-        self.transfmat_path = self.self.transfmat_path_edit.text()
+        self.transfmat_path = self.transfmat_path_edit.text()
         start_timepoint = self.start_timepoint_edit.text()
         end_timepoint = self.end_timepoint_edit.text()        
         
@@ -193,7 +191,7 @@ class Folder(QMainWindow):
     def browse(self):
         # Open a file dialog to select the folder
         folder = QFileDialog.getExistingDirectory()
-        self.self.transfmat_path_edit.setText(folder)
+        self.transfmat_path_edit.setText(folder)
 
         # Clear the list widget
         self.list_widget.clear()
@@ -273,30 +271,13 @@ class DisplayGraphWindow(QWidget):
         # Add the canvas to the layout
         layout = QtWidgets.QVBoxLayout(self)
         layout.addWidget(canvas)
-            
 
-if __name__ == "__main__":
-    import sys
-    app = QApplication(sys.argv)
-    param = ''
-    try:
-        param = sys.argv[1]
-    except:
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Critical)
-        msg.setText("Error")
-        msg.setInformativeText('No parameter found')
-        msg.setWindowTitle("Error")
-        msg.show()
-        sys.exit(app.exec_())
-    else:
+class Editing(QMainWindow):
+    def __init__(self, param, parent=None):
+        super(Editing, self).__init__(parent)
         if param == 'single':
-            form = Single()
-            form.move(260,0)
-            form.show()
+            form = Single(self)
+            self.setCentralWidget(form)
         elif param == 'folder':
-            form = Folder()
-            form.move(260,0)
-            form.show()
-
-    sys.exit(app.exec_())
+            form = Folder(self)
+            self.setCentralWidget(form)

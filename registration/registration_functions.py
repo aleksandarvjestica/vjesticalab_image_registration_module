@@ -45,10 +45,9 @@ Registry of observed problems:
 import numpy as np
 import os
 import time
-import evaluation_of_registration
+import registration.evaluation_of_registration
 from PyQt5.QtWidgets import QMessageBox
-from ..general import general_functions as gf
-
+from general import general_functions as gf
 
 def registration_main(path, referenceIdentifier, coalignNonReferenceFiles):
     #Check whether path is a folder path or a file path    
@@ -189,7 +188,7 @@ def registration_main(path, referenceIdentifier, coalignNonReferenceFiles):
     
     # Visualise the results obtained
     try:
-        evaluation_of_registration.main(pathsInventory, registeredFilesList)
+        registration.evaluation_of_registration.main(pathsInventory, registeredFilesList)
     except Exception as e:
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Critical)

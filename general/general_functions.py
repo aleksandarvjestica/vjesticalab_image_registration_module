@@ -8,7 +8,6 @@ import warnings
 warnings.filterwarnings(action='ignore', category=DeprecationWarning, message='`np.bool` is a deprecated alias')
 warnings.filterwarnings("error", category=UserWarning)
 
-
 def base_name(fileName):
     #This function uses the underscore symbol to separate the basename from the channel information
     return fileName.split("_")[0]
