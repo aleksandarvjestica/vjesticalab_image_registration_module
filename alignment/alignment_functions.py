@@ -2,7 +2,7 @@ import numpy as np
 import os
 import tifffile
 import time
-import general.general_functions as gf
+from general import general_functions as gf
 
 def alignment_main(folder_path, fileInventory, skip_crop_decision):
     start = time.time()

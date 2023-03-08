@@ -1,6 +1,6 @@
 import numpy as np
 import time
-import general.general_functions as gf
+from  general import general_functions as gf
 
 def edit_main(reference_matrix_path, reference_timepoint, range_start, range_end):
     #Load the transformation matrix 

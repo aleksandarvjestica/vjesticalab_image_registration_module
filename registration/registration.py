@@ -1,33 +1,28 @@
 import os
-from PyQt5.QtWidgets import QApplication, QFileDialog, QLabel, QLineEdit, QCheckBox, QPushButton, QVBoxLayout, QWidget, QTextEdit, QMessageBox
+from PyQt5.QtWidgets import QApplication, QFileDialog, QLabel, QLineEdit, QCheckBox, QPushButton, QVBoxLayout, QWidget, QTextEdit, QMessageBox, QMainWindow
 from PyQt5.QtCore import Qt
-import registration_functions as f
+from registration import registration_functions as f
 
 class SingleFile(QWidget):
-    def __init__(self):
-        super().__init__()
-
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.parent = parent
         # Create a label and a text input field for the folder path
         self.setWindowTitle("Single image registration")
-        
         self.display1 = QLabel("Step1: \tSelect image file to process")
         self.selected_file = QLineEdit()
         # Create a button to open the file browser and fill the selected_file field
         self.browse_button = QPushButton("Browse", self)
         self.browse_button.clicked.connect(self.browse_file)
-
         # Create a label and a text input field for the reference file identifier
         self.display2 = QLabel("\nStep2: \tThe basename (string preceeding the _) \n\tcan be used to co-align files.")
         self.coalignment_yn = QCheckBox("Co-align files with the same basename")
-
         # Create a button to process the input
         self.submit_button = QPushButton("Submit", self)
         self.submit_button.clicked.connect(self.process_input)
-
         # Create a button to quit
         self.quit_button = QPushButton("Quit", self)
-        self.quit_button.clicked.connect(self.close)
-
+        self.quit_button.clicked.connect(self.parent.close)
         # Create the layout
         layout = QVBoxLayout()
         layout.addWidget(self.display1)
@@ -68,11 +63,12 @@ class SingleFile(QWidget):
         else:
             print('\nNo such file found!')
 
-        self.close()
+        self.parent.close()
 
 class SingleFolder(QWidget):
-    def __init__(self):
+    def __init__(self, parent):
         super().__init__()
+        self.parent = parent
         self.setWindowTitle("Image folder registration")
 
         # Create a label and a text input field for the folder path
@@ -96,7 +92,7 @@ class SingleFolder(QWidget):
 
         # Create a button to quit
         self.quit_button = QPushButton("Quit", self)
-        self.quit_button.clicked.connect(self.close)
+        self.quit_button.clicked.connect(self.parent.close)
 
         # Create the layout
         layout = QVBoxLayout()
@@ -141,19 +137,20 @@ class SingleFolder(QWidget):
         else:
             print('\nNo such folder found!')
 
-        self.close()
+        self.parent.close()
 
 class MultiFolder(QWidget):
-    def __init__(self):
+    def __init__(self, parent):
         super().__init__()
+        self.parent = parent
         self.setWindowTitle("Multiple folders registration")
-        
+
         # Create a label and a text input field for the folder path list
         self.display1 = QLabel("Step1: \tInsert a list of paths to folders that need to be aligned. \n\tEach folder MUST be written in a new line. \n\tSpace or slash characters at the end of the folder will confuse the script!")
         self.display1b = QLabel("<i>/Users/admin/Desktop/20220216_P0001_E0008_U002</i>")
         self.display1b.setTextFormat(Qt.RichText)
         self.folders_list = QTextEdit()
-        
+
         # Create a label and a text input field for the reference file identifier
         self.display2 = QLabel("\nStep2: \tSpecify the unique identifier of reference files")
         self.reference_identifier_entry = QLineEdit()
@@ -168,7 +165,7 @@ class MultiFolder(QWidget):
 
         # Create a button to quit
         self.quit_button = QPushButton("Quit", self)
-        self.quit_button.clicked.connect(self.close)
+        self.quit_button.clicked.connect(self.parent.close)
 
         # Create the layout
         layout = QVBoxLayout()
@@ -197,11 +194,11 @@ class MultiFolder(QWidget):
         print('\nCo-alignment will be performed: ', coalignment)
 
         #Iterate through individual folders
-        #Check if the folder exists, 
+        #Check if the folder exists,
         #   If folder exists, activate registration
         #   If folder does not exist, skip registration
 
-        for folder in folder_list:    
+        for folder in folder_list:
             if os.path.isdir(folder):
                 print('\nFound folder ', folder, '\nStarting registration...')
                 path = folder + '/'
@@ -220,38 +217,17 @@ class MultiFolder(QWidget):
                 print('\nUnable to locate folder ', folder, '\nMoving onto next folder...')
 
         print('\nAll folders have been registered!')
+        self.parent.close()
 
-
-if __name__ == "__main__":
-    import sys
-    app = QApplication(sys.argv)
-    param = ''
-    try:
-        param = sys.argv[1]
-    except:
-        print('\n')
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Critical)
-        msg.setText("Error")
-        msg.setInformativeText('No parameter found')
-        msg.setWindowTitle("Error")
-        msg.show()
-        sys.exit(app.exec_())
-    else:
+class Registration(QMainWindow):
+    def __init__(self, param, parent=None):
+        super(Registration, self).__init__(parent)
         if param == 'singleFile':
-            form = SingleFile()
-            form.move(260,0)
-            form.show()
-            sys.exit(app.exec_())
+            form = SingleFile(self)
+            self.setCentralWidget(form)
         elif param == 'singleFolder':
-            form = SingleFolder()
-            form.move(260,0)
-            form.show()
-            sys.exit(app.exec_())
+            form = SingleFolder(self)
+            self.setCentralWidget(form)
         elif param == 'multiFolder':
-            form = MultiFolder()
-            form.move(260,0)
-            form.show()
-            sys.exit(app.exec_())
-
-    sys.exit(app.exec_())
+            form = MultiFolder(self)
+            self.setCentralWidget(form)

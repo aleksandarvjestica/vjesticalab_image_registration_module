@@ -2,6 +2,9 @@ from functools import partial
 from PyQt5.QtCore import QProcess, Qt
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import (QApplication, QFrame, QHBoxLayout, QLabel, QPushButton, QVBoxLayout, QWidget)
+from registration import registration
+from alignment import alignment
+from registrationEditing import editing
 
 class MainWindow(QWidget):
     def __init__(self):
@@ -108,34 +111,16 @@ class MainWindow(QWidget):
         
         
     def registration(self, param):
-        # Create a QProcess to run the Python interpreter
-        process = QProcess(self)
-        qscript = "registration/registration.py"
-        qinterpreter = sys.executable #python path
-        # Start the Python interpreter and run python script
-        process.setStandardOutputFile("log/output_registration.txt")
-        process.setStandardErrorFile("log/output_registration.txt")
-        process.start(qinterpreter, [qscript, param])
+        window = registration.Registration(param, parent=self)
+        window.show()
 
     def alignment(self, param):
-        # Create a QProcess to run the Python interpreter
-        process = QProcess(self)
-        qscript = "alignment/alignment.py"
-        qinterpreter = sys.executable #python path
-        # Start the Python interpreter and run python script
-        process.setStandardOutputFile("log/output_alignment.txt")
-        process.setStandardErrorFile("log/output_alignment.txt")
-        process.start(qinterpreter, [qscript, param])
+        window = alignment.Alignment(param, parent=self)
+        window.show()
 
     def editing(self, param):
-        # Create a QProcess to run the Python interpreter
-        process = QProcess(self)
-        qscript = "registrationEditing/editing.py"
-        qinterpreter = sys.executable #python path
-        # Start the Python interpreter and run python script
-        process.setStandardOutputFile("log/output_editing.txt")
-        process.setStandardErrorFile("log/output_editing.txt")
-        process.start(qinterpreter, [qscript, param])
+        window = editing.Editing(param, parent=self)
+        window.show()
 
 if __name__ == "__main__":
     import sys

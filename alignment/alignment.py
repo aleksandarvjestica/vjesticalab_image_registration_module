@@ -1,14 +1,14 @@
 import os
 from PyQt5.QtWidgets import QTextEdit, QApplication, QMainWindow, QLabel, QPushButton, QListWidget, QFileDialog, QVBoxLayout, QWidget, QLineEdit, QCheckBox, QMessageBox
 from PyQt5.QtCore import Qt
-import alignment_functions as f
+from alignment import alignment_functions as f
 import napari
-import general.general_functions as gf
+from general import general_functions as gf
 
-
-class View(QMainWindow):
-    def __init__(self):
-        super().__init__()
+class View(QWidget):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.parent = parent
         self.setWindowTitle("Files alignment with matrices")
 
         # Create the widgets
@@ -29,7 +29,7 @@ class View(QMainWindow):
 
         # Create a button to quit
         self.quit_button = QPushButton("Quit", self)
-        self.quit_button.clicked.connect(self.close)
+        self.quit_button.clicked.connect(self.parent.close)
 
         # Add the widgets to the layout
         layout = QVBoxLayout()
@@ -42,10 +42,8 @@ class View(QMainWindow):
         layout.addWidget(self.skip_cropping_yn)
         layout.addWidget(self.quit_button)
 
-        # Set the layout for the window
-        central_widget = QWidget()
-        central_widget.setLayout(layout)
-        self.setCentralWidget(central_widget)
+        # # Set the layout for the window
+        self.setLayout(layout)
 
     def browse_folder(self):
         self.folder_path = QFileDialog.getExistingDirectory()
@@ -110,9 +108,10 @@ class View(QMainWindow):
                 image_registered = gf.register_with_tmat_multiD(transfMat_load, image_load, 1,2, skip_decision=skip_crop_decision) 
                 viewer = napari.view_image(image_registered)
 
-class SingleFile(QMainWindow):
-    def __init__(self):
-        super().__init__()
+class SingleFile(QWidget):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.parent = parent
         self.setWindowTitle("Files alignment with matrices")
 
         # Create the widgets
@@ -137,7 +136,7 @@ class SingleFile(QMainWindow):
 
         # Create a button to quit
         self.quit_button = QPushButton("Quit", self)
-        self.quit_button.clicked.connect(self.close)
+        self.quit_button.clicked.connect(self.parent.close)
 
         # Add the widgets to the layout
         layout = QVBoxLayout()
@@ -153,9 +152,7 @@ class SingleFile(QMainWindow):
         layout.addWidget(self.quit_button)
 
         # Set the layout for the window
-        central_widget = QWidget()
-        central_widget.setLayout(layout)
-        self.setCentralWidget(central_widget)
+        self.setLayout(layout)
 
     def browse_folder(self):
         self.folder_path = QFileDialog.getExistingDirectory()
@@ -198,7 +195,7 @@ class SingleFile(QMainWindow):
             current_inventory={}
             current_inventory[transfMat_name]= [imageFile_single]
             print('\nCurrent inventory:', current_inventory, skip_crop_decision)
-            f.registration_main(self.folder_path+'/', current_inventory, skip_crop_decision)
+            f.alignment_main(self.folder_path+'/', current_inventory, skip_crop_decision)
 
     def transfMat_script(self, item):
         skip_crop_decision = self.skip_cropping_yn.isChecked()
@@ -208,11 +205,12 @@ class SingleFile(QMainWindow):
         current_inventory={}
         current_inventory[transfMat_name]= imageFiles_list
         print('\nCurrent inventory:', current_inventory, skip_crop_decision)
-        f.registration_main(self.folder_path+'/', current_inventory, skip_crop_decision)
+        f.alignment_main(self.folder_path+'/', current_inventory, skip_crop_decision)
 
-class SingleFolder(QMainWindow):
-    def __init__(self):
-        super().__init__()
+class SingleFolder(QWidget):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.parent = parent
         self.setWindowTitle("Input Form")
 
         # Create the widgets
@@ -227,7 +225,7 @@ class SingleFolder(QMainWindow):
 
 
         self.quit_button = QPushButton("Quit", self)
-        self.quit_button.clicked.connect(self.close)
+        self.quit_button.clicked.connect(self.parent.close)
 
         # Add the widgets to the layout
         layout = QVBoxLayout()
@@ -240,9 +238,7 @@ class SingleFolder(QMainWindow):
         layout.addWidget(self.quit_button)
         
         # Set the layout for the window
-        central_widget = QWidget()
-        central_widget.setLayout(layout)
-        self.setCentralWidget(central_widget)
+        self.setLayout(layout)
 
     # Create a function to open a file browser and store the selected file's path
     def browse_folder(self):
@@ -257,13 +253,14 @@ class SingleFolder(QMainWindow):
 
         if os.path.isdir(path):
             print('\nFolder found. Starting registration...')
-            f.registration_main(path, '', skip_crop_decision)
+            f.alignment_main(path, '', skip_crop_decision)
         else:
             print('\nNo such folder found!')
 
 class MultiFolder(QWidget):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.parent = parent
         self.setWindowTitle("Multiple folders alignment with matrices")
 
         # Create a label and a text input field for the folder path list
@@ -282,7 +279,7 @@ class MultiFolder(QWidget):
 
         # Create a button to quit
         self.quit_button = QPushButton("Quit", self)
-        self.quit_button.clicked.connect(self.close)
+        self.quit_button.clicked.connect(self.parent.close)
 
         # Create the layout
         layout = QVBoxLayout()
@@ -312,43 +309,25 @@ class MultiFolder(QWidget):
             if os.path.isdir(folder):
                 print('\nFound folder ', folder, '\nStarting registration...')
                 path = folder + '/'
-                f.registration_main(path, '', skip_crop_decision)
+                f.alignment_main(path, '', skip_crop_decision)
             else:
                 print('\nUnable to locate folder ', folder, '\nMoving onto next folder...')
 
         print('\nAll folders have been aligned!')
 
 
-if __name__ == "__main__":
-    import sys
-    app = QApplication(sys.argv)
-    param = ''
-    try:
-        param = sys.argv[1]
-    except:
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Critical)
-        msg.setText("Error")
-        msg.setInformativeText('No parameter found')
-        msg.setWindowTitle("Error")
-        msg.show()
-        sys.exit(app.exec_())
-    else:
+class Alignment(QMainWindow):
+    def __init__(self, param, parent=None):
+        super(Alignment, self).__init__(parent)
         if param == 'view':
-            form = View()
-            form.move(260,0)
-            form.show()
+            form = View(self)
+            self.setCentralWidget(form)
         elif param == 'singleFile':
-            form = SingleFile()
-            form.move(260,0)
-            form.show()
+            form = SingleFile(self)
+            self.setCentralWidget(form)
         elif param == 'singleFolder':
-            form = SingleFolder()
-            form.move(260,0)
-            form.show()
+            form = SingleFolder(self)
+            self.setCentralWidget(form)
         elif param == 'multiFolder':
-            form = MultiFolder()
-            form.move(260,0)
-            form.show()
-
-    sys.exit(app.exec_())
+            form = MultiFolder(self)
+            self.setCentralWidget(form)
